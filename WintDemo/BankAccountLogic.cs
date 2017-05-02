@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace WintDemo
 {
-    public class BankAccountRepo
+    public class BankAccountLogic
     {
-        public BankAccountRepo()
+        public BankAccountLogic()
         {
             _Account = LoadData();
         }
@@ -47,7 +47,7 @@ namespace WintDemo
         public decimal GetSumOfDeposits()
         {
             return Account.Transactions
-                .Where(t => t.Amount >= 0)
+                .Where(t => t.Amount > 0)
                 .Select(t => t.Amount)
                 .Sum();
         }
@@ -55,9 +55,27 @@ namespace WintDemo
         public decimal GetSumOfWithdrawals()
         {
             return Account.Transactions
-                .Where(t => t.Amount <= 0)
+                .Where(t => t.Amount < 0)
                 .Select(t => t.Amount)
                 .Sum();
+        }
+
+        public Dictionary<DateTime, decimal> GetMindnightReport()
+        {
+            var currentBalance = Account.InitialBalance;
+            var result = new Dictionary<DateTime, decimal>();
+
+            var midnightReports = Account.Transactions
+                .GroupBy(t => t.Timestamp.Date)
+                .Select(g => new { TimeStamp = g.Key, Value = g.Sum(s => s.Amount) });
+
+            foreach (var report in midnightReports)
+            {
+                currentBalance += report.Value;
+                result.Add(report.TimeStamp, currentBalance);
+            }
+
+            return result;
         }
 
     }
