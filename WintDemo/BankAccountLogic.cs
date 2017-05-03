@@ -64,10 +64,11 @@ namespace WintDemo
         {
             var currentBalance = Account.InitialBalance;
             var result = new Dictionary<DateTime, decimal>();
+            result.Add(Account.Transactions.Select(t => t.Timestamp).Min(), currentBalance);
 
             var midnightReports = Account.Transactions
                 .GroupBy(t => t.Timestamp.Date)
-                .Select(g => new { TimeStamp = g.Key, Value = g.Sum(s => s.Amount) });
+                .Select(g => new { TimeStamp = g.Key.AddDays(1), Value = g.Sum(s => s.Amount) });
 
             foreach (var report in midnightReports)
             {
